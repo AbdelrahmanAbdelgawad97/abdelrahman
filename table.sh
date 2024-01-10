@@ -58,7 +58,7 @@ if [ -d $NDB ];then
     do
         case $chooseT in
             Create_Table)
-                echo "List of tables:"
+                echo "List of current tables:"
                 find  $pwd -type f;
                 echo "Enter the name of the new table:" 
                 read Tname
@@ -71,40 +71,49 @@ if [ -d $NDB ];then
 
                 arr=()
                 arrType=()
-                read -p"Enter The Number Of Column " Tcolumn
+                echo "Please enter the number of columns:" 
+                read Tcolumn
                 for (( i=1; i<=$Tcolumn;i++ ))
                 do
-                    
-                        read -p"Enter the name of column number $i " ColName
-                        read -p"choose the type of column number $i (int,string,float,date) " Coltype
+                        echo "Enter the name of column number $i:"
+                        read ColName
+                        echo "Please choose the type of column number $i: (int,string,float,date)." 
+                        read Coltype
                         arr[$i]=$ColName
                         arrType[$i]=$Coltype
-
                 done
                 echo "${arrType[*]}">>$Tname
                 echo "${arr[*]}">>$Tname
                 echo >>$Tname
+                echo "Table created!"
                 fi
             ;;
 
             List_Table)
-                echo "all table that you have"
+                echo "List of all tables:"
                 find  $pwd -type f;
-                read -p "Choose The Table that you need all inside data " insTable
+                echo "Which table would you like the data from?"
+                read insTable
                 if [ -f $insTable ];then
                 cat $insTable
-                else echo "No exist table like that name that you enter $insTable "
+                else echo "Table '$insTable' does not exist."
                 fi
             
             ;;
             Drop_Table)
-            echo "all table that you have"
+            echo "List of tables:"
                 find  $pwd -type f;
-                read -p "Choose The Table that you need to delete " delTable
-                if [ -f $insTable ];then
+                echo "Which table would you like to delete?"
+                read delTable
+                
+                ##You had a bug here. It should not be $insTable, it should be $deltable.
+                ##if [ -f $insTable ];then
+                ## -Zohry
+
+                if [ -f $delTable ];then
                 rm $delTable
-                echo "$delTable already deleted"
-                else echo "No exist table like that name that you enter $insTable "
+                echo "$delTable deleted!"
+                else echo "Table $delTable does not exist."
                 fi
 
             ;;
@@ -131,8 +140,6 @@ if [ -d $NDB ];then
 
                     else echo "No exist table like that name that you enter $insTable "
                     fi
-
-
 
             ;;
             Select_From_Table)
