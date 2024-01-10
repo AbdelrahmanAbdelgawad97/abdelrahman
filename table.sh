@@ -32,7 +32,11 @@ checkChar()
     else
         var=$1;
         var=${var//" "/"_"}
-        echo $var
+
+        ##This prints it to terminal an extra time, we don't need it
+        ## -Zohry
+
+        ##echo $var
     fi
 
     ## 2>/dev/null means that if it has an error it does not output it to terminal 
@@ -92,7 +96,7 @@ if [ -d $NDB ];then
             List_Table)
                 echo "List of all tables:"
                 find  $pwd -type f;
-                echo "Which table would you like the data from?"
+                echo "Which table would you like the data of?"
                 read insTable
                 if [ -f $insTable ];then
                 cat $insTable
@@ -118,9 +122,10 @@ if [ -d $NDB ];then
 
             ;;
             Insert_Table)
-                echo "all table that you have"
+                echo "List"
                     find  $pwd -type f;
-                read -p "Choose The Table that you need to insert data in " insTable
+                    echo "Which table would you like to insert data in?"
+                    read insTable
                     if [ -f $insTable ];then
                     x=$(sed -n 1p $insTable)
                     y=$(sed -n 2p $insTable)
@@ -132,60 +137,88 @@ if [ -d $NDB ];then
                     arr=()
                     for (( i=0; i<${#headlines[@]}; i++ ))
                     do
-                        read -p"Enter the value of ${headlines[i]} type ${types[$i]} " data
+                    echo "Enter the values of: ${headlines[i]} of types: ${types[$i]}, separated by a space." 
+                        read data
                         arr[$i]=$data
-
                     done
                     echo "${arr[*]}" >> $insTable
+                    echo "Data added!"
 
-                    else echo "No exist table like that name that you enter $insTable "
+                    else echo "Table $insTable does not exist."
                     fi
+
+
 
             ;;
             Select_From_Table)
-                    select selectone in allTable choose_row choose_column exit;
-                    do
 
+                #Here:
+                    echo "What would you like to select from a table?"
+                    select selectone in "Whole Table" "Specific Row" "Specific Column" exit;
+                    do
                         case $selectone in
-                        allTable)
-                            echo "all table that you have"
+                        "Whole Table")
+                            echo "List of tables:"
                             find  $pwd -type f;
-                        read -p "Choose The Table that you need to show " insTable
+                            echo "Choose The Table that you need to show:" 
+                            read insTable
                             if [ -f $insTable ];then
                             cat $insTable
-                            else echo "No exist table like that name that you enter $insTable "
+                            else echo "Table $insTable does not exist."
                             fi
 
-
                         ;;
-                        choose_row)
-                            echo "all table that you have"
-                                find  $pwd -type f;
-                            read -p "Choose The Table that you need to show " insTable
+                        "Specific Row")
+                            echo "List of tables:"
+                            find  $pwd -type f;
+                            echo "Which table would you like to choose rows from?" 
+                            read insTable
                                 if [ -f $insTable ];then
                                 sed -n 1,2p $insTable
 
-                                    read -p "give us the counts of row that you need to show " rowshow
-
+                                    echo "How many rows would you like to see?" 
+                                    read rowshow
                                     arr=()
-                                    for (( i=1; i<=rowshow; i++ ))
+
+
+                                    ##This doesn't work.
+
+                                    for (( i=1; i<=$rowshow; i++ ))
                                     do
-                                    read -p "give us the name of row $i that you need " rowName
-                                    arr[$i]=$rowName
-                                    done
-                                    # awk ' NR$rowName' $insTable
-                                    for (( i=0; i<${#arr[@]} ;i++ ))
-                                    do
-                                    sed -n '/${arr[i]}/p' $insTable
+                                    echo "Please enter the row number of row $i that you want to see:"
+                                    read rowName
+
+                                    ##Since the first 3 rows of your database are reserved rows, you have to add 3 to the row number
+                                    ## -Zohry
+                                    ##Delete this comment after reading.
+
+                                    rowName=$(($rowName + 3))
+                                    echo $rowName
+
+                                    ##Appending to an array is not done with arr[i]=X. Is it with arr+=X
+                                    ## -Zohry
+
+                                    arr+=($rowName)
                                     done
 
-                                else echo "No exist table like that name that you enter $insTable "
+                                    echo "This should be here"
+                                    echo $arr
+                                    # awk ' NR$rowName' $insTable
+
+                                    ##Testing a new Forloop
+                                    ## -Zohry
+
+                                    for i in ${arr[@]}
+                                    do
+                                    echo "$i please"
+                                    sed -n "$i p" $insTable
+                                    done
+
+                                else echo "Table $insTable does not exist."
                                 fi
                             
-
-
                         ;;
-                        choose_column)
+                        "Specific Column")
                             echo "all table that you have"
                                 find  $pwd -type f;
 
