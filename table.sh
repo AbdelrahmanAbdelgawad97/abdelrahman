@@ -9,19 +9,23 @@ IFS=","
 checkChar()
 {
 
-    sympoles='[/*-=+()^%$#@!~`{};:<>]|\[|\]';
+    ## These don't do anything in your code anymore. 
+
+    #symbols='[/*-=+()^%$#@!~`{};:<>]|\[|\]';
+
+    #space='[_ ]';
+
+    #numbers='[0-9]';
 
     notAlphanumerics='[^a-zA-Z0-9_ ]'
 
-    numbers='[0-9]';
-
-    space='[_ ]';
 
     if [[ $1 =~ $notAlphanumerics ]]; then 
     echo 'Please don't enter any of those chars '[/*-=+()^%$#@!~`{};:<>]|\[|\]'' ';
-        read -p"Enter The Name Of Data Base " NDB
+    echo "Enter The Name of the Database."
+        read NDB
     elif [[ $1 =~ ^[0-9] ]]; then 
-        echo "don't start the name of DB with number ";
+        echo "Don't start the name of DB with a number.";
         read -p"Enter The Name Of Data Base " NDB
     else
 
