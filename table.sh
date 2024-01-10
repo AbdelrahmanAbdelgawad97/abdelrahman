@@ -210,7 +210,7 @@ if [ -d $NDB ];then
 
                                     for i in ${arr[@]}
                                     do
-                                    echo "$i please"
+                                    echo "Row $i:"
                                     sed -n "$i p" $insTable
                                     done
 
