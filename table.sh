@@ -10,6 +10,7 @@ checkChar()
 {
 
     ## These don't do anything in your code anymore. 
+    ## -Zohry
 
     #symbols='[/*-=+()^%$#@!~`{};:<>]|\[|\]';
 
@@ -33,7 +34,11 @@ checkChar()
         var=${var//" "/"_"}
         echo $var
     fi
-        return $var;
+
+    ## 2>/dev/null means that if it has an error it does not output it to terminal 
+    ## -Zohry
+
+        return $var 2>/dev/null;
 }
 
 
@@ -41,20 +46,25 @@ checkChar()
 
 echo "Here the all the databases that you have." 
 ls -d */;
-read -p"Choose The Data Base That You Need To Connect " NDB
+echo "Please choose the database that you want to access." 
+read NDB
 
 if [ -d $NDB ];then
     cd $NDB
-    select chooseT in Creat_Table  List_Table  Drop_Table Insert_Table Select_From_Table Delete_From_Table Update_From_table Exit;
+
+    echo "Please choose what you want to do in this database."
+
+    select chooseT in Create_Table  List_Table  Drop_Table Insert_Table Select_From_Table Delete_From_Table Update_From_table Exit;
     do
         case $chooseT in
-            Creat_Table)
-                echo "The tables that you have"
+            Create_Table)
+                echo "List of tables:"
                 find  $pwd -type f;
-                read -p"Enter The Name Of Table that you need to create " Tname
+                echo "Enter the name of the new table:" 
+                read Tname
 
                 if [ -f $Tname ];then
-                    echo "Table already exist"
+                    echo "Table already exists."
                 else
                 checkChar $Tname
                 touch $Tname
