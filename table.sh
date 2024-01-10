@@ -22,13 +22,13 @@ checkChar()
 
     if [[ $1 =~ $notAlphanumerics ]]; then 
     echo 'Please don't enter any of those chars '[/*-=+()^%$#@!~`{};:<>]|\[|\]'' ';
-    echo "Enter The Name of the Database."
-        read NDB
+    echo "Enter The Name of the Database:"
+    read NDB
     elif [[ $1 =~ ^[0-9] ]]; then 
         echo "Don't start the name of DB with a number.";
-        read -p"Enter The Name Of Data Base " NDB
+        echo "Enter the Name of the Database:"
+        read NDB
     else
-
         var=$1;
         var=${var//" "/"_"}
         echo $var
@@ -39,7 +39,7 @@ checkChar()
 
 
 
-echo "Here the all data base that you have" 
+echo "Here the all the databases that you have." 
 ls -d */;
 read -p"Choose The Data Base That You Need To Connect " NDB
 
