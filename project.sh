@@ -1,135 +1,154 @@
 #!bin/bash
 LC_COLLATE=C
 shopt -s extglob
-
  
 notAlphanumerics='[^a-zA-Z0-9_ ]'
 
-select choose in Creat_DB  List_DB  Drop_DB Conect_DB Exit;
+echo "Welcome to MZohry and Abdelrahman Database Management System. Please choose an option below:"
 
+select choose in "Create a Database" "List All Databases" "Delete A Database" "Access a Database" Exit;
 do
     case $choose in
-    Creat_DB)
-        read -p"Enter The Name Of Data Base " CDB
-                if [ -d $CDB ];then 
-                    echo "Data base already exist";
-                else
-                    if [[ $CDB =~ $notAlphanumerics ]]; then 
-                    echo 'Please don't enter any of those chars '[/*-=+()^%$#@!~`{};:<>]|\[|\]'' ';
-                    read -p"Enter The Name Of Data Base " NDB
-                    elif [[ $CDB =~ ^[0-9] ]]; then 
-                    echo "don't start the name of DB with number ";
-                    read -p"Enter The Name Of Data Base " NDB
-                    else
-                    var=$CDB;
-                    var=${var//" "/"_"}
-                    mkdir $var;    
-                    fi
-                
-                
-                
-                fi
+    "Create a Database")
+        while [ true ]
+        do
+            echo "What would you like to name the database?"
+            read CDB
+            if [ -d $CDB ]; then 
+                echo "Database already exists. Please enter a different name."; continue;
+            elif [[ $CDB =~ $notAlphanumerics ]]; then 
+                echo 'Database name cannot have non-alphanumeric characters, except underscores and spaces(which are converted to underscores).'; continue;
+            elif [[ $CDB =~ ^[0-9] ]]; then 
+                echo "Database names cannot start with a number. Please enter a different name."; continue;
+            else
+                var=$CDB;
+                var=${var//" "/"_"};
+                mkdir $var;
+                break;
+            fi
+        done      
     ;;
-    List_DB)
+    "List All Databases")
         ls -d */;
     ;;
-    Drop_DB)
-        echo "Here the all data base that you have" 
+    "Delete A Database")
+        echo "List of Databases:" 
             ls -d */;
-        read -p"Enter The Name Of Data Base That You Need To Delete " DDB
-            if [ -d $DDB ];then
-                rm -r $DDB;
-                echo "Data Base is already deleted";
-            else echo "Data Base is not exist";    
-            fi
+        echo "Which database would you like to delete?"
+        read DDB
+        if [ -d $DDB ];then
+            rm -r $DDB;
+            echo "Database deleted!";
+        else 
+            echo "Database $DDB does not exist. Returning to previous menu."; 
+        fi
     ;;
-    Conect_DB)
-        echo "Here the all data base that you have" 
+    "Access a Database")
+        echo "List of Databases:" 
             ls -d */;
-        read -p"Enter The Name Of Data Base That You Need To Connect " NDB
-
-        if [ -d $NDB ];then
-    cd $NDB
-
+        echo "Which database would you like to connect to?"
+        read NDB
+        if [ ! -d $NDB ];then
+            echo "Database does not exist";
+        else
+            cd $NDB;
+        
     echo "Please choose what you want to do in this database."
 
-    select chooseT in Create_Table  List_Table  Drop_Table Insert_Table Select_From_Table Delete_From_Table Update_From_table Exit;
+    select chooseT in "Create a Table"  "List contents of a table" "Drop a Table" "Insert values into Table" "Select Row/Column from Table" Delete_From_Table Update_From_table Exit;
     do
         case $chooseT in
-            Create_Table)
-                echo "List of tables:"
+            "Create a Table")
+               echo "List of tables:";
                 find  $pwd -type f;
-                read -p "Enter the name of the new table:" Tname
-                 
+                while [ true ]
+                do
+                    echo "Enter the name of the new table:"; 
+                    read Tname;
 
                     if [[ $Tname =~ $notAlphanumerics ]]; then 
-                    echo 'Please don't enter any of those chars '[/*-=+()^%$#@!~`{};:<>]|\[|\]'' ';
-                    read -p "Enter the name of the new table:" Tname
+                        echo 'Table names can only contain alphanumeric characters, underscores, and spaces(which are converted to spaces).';
+                        continue;
                     elif [[ $Tname =~ ^[0-9] ]]; then 
-                    echo "don't start the name of DB with number ";
-                    read -p "Enter the name of the new table:" Tname
+                        echo "Table names cannot start with a number.";
+                        continue;
                     else
-                    var=$Tname;
-                    IFS=","
-                    var=${var//" "/"_"}   
+                        var=$Tname
+                        IFS=","
+                        var=${var//" "/"_"}
+                        break
+                    fi
+                done
 
-                        if [ -f $Tname ];then
-                            echo "Table already exists."
-                        else
-                        touch $Tname
+                if [ -f $Tname ];then
+                    echo "Table already exists."
+                else
+                touch $Tname
 
-                        arr=()
-                        arrType=()
-                        read -p"Enter The Number Of Column " Tcolumn
-                        for (( i=1; i<=$Tcolumn;i++ ))
-                        do
-                            
-                                if [ $i -eq 1 ];then
-                                read -p"Enter the name of column number $i and it will be Primary Key " ColName
-                                read -p"choose the type of column number $i (int,string,float,date) " Coltype
-                                arr[$i]="*$ColName"
-                                arrType[$i]="$Coltype"
-                                else
-                                read -p"Enter the name of column number $i " ColName
-                                read -p"choose the type of column number $i (int,string,float,date) " Coltype
-                                arr[$i]=$ColName
-                                arrType[$i]=$Coltype
-                                fi    
+                arr=()
+                arrType=()
 
-                        done
-                        echo "${arrType[*]}">>$Tname
-                        echo "${arr[*]}">>$Tname
-                        echo >>$Tname
-                        fi
+                echo "How many columns should it have?"
+                read Tcolumn
+                for (( i=1; i<=$Tcolumn;i++ ))
+                do
+                    if [ $i -eq 1 ];then
+                        read -p"Enter the name of column number $i and it will be Primary Key " ColName
+                        read -p"choose the type of column number $i (int,string,float,date) " Coltype
+                        arr[$i]="*$ColName"
+                        arrType[$i]="$Coltype"
+                    else
+                        read -p"Enter the name of column number $i " ColName
+                        read -p"choose the type of column number $i (int,string,float,date) " Coltype
+                        arr[$i]=$ColName
+                        arrType[$i]=$Coltype
                     fi    
+                done
+                echo "${arrType[*]}">>$Tname
+                echo "${arr[*]}">>$Tname
+                echo >>$Tname
+                fi    
             ;;
 
-            List_Table)
-                echo "all table that you have"
+            "List contents of a table")
+                echo "List of tables:"
                 find  $pwd -type f;
-                read -p "Choose The Table that you need all inside data " insTable
-                if [ -f $insTable ];then
-                cat $insTable
-                else echo "No exist table like that name that you enter $insTable "
-                fi
+
+                while [ true ] 
+                do
+                    echo "Which table would you like to view the contents of?"
+                    read insTable
+                    if [ -f $insTable ];then
+                        echo "Contents of Table $insTable:"
+                        cat $insTable
+                        break;
+                    else 
+                        echo "Table $insTable does not exist."
+                        continue;
+                    fi
+                done
             
             ;;
-            Drop_Table)
-            echo "all table that you have"
+            "Drop a Table")
+            echo "List of Tables:"
                 find  $pwd -type f;
-                read -p "Choose The Table that you need to delete " delTable
-                if [ -f $insTable ];then
-                rm $delTable
-                echo "$delTable already deleted"
-                else echo "No exist table like that name that you enter $insTable "
-                fi
-
+                while [ true ]
+                do
+                    echo "Which table would you like to delete?"
+                    read delTable
+                    if [ -f $insTable ];then
+                        rm $delTable;
+                        echo "Table $delTable deleted.";
+                        break;
+                    else 
+                        echo "Table $insTable does not exist."
+                        continue;
+                    fi
+                done
             ;;
-            Insert_Table)
-
+            "Insert values into Table")
             function check_type()
                         {
-
                         if [[ $1 =~ ^[+-]?[0-9]+$ ]]; then
                             x="int"
                             echo $x
@@ -145,154 +164,136 @@ do
                         fi
                         }
 
-                echo "all table that you have"
-                    find  $pwd -type f;
-                read -p "Choose The Table that you need to insert data in " insTable
-                    if [ -f $insTable ];then
-                    x=$(sed -n 1p $insTable)
-                    y=$(sed -n 2p $insTable)
+                echo "List of Tables:"
+                find  $pwd -type f;
+                echo "Which table would you like to insert the data into?"
+                read insTable
+                    if [ ! -f $insTable ];then
+                        echo "Table $insTable does not exist."
+                    else
+                        x=$(sed -n 1p $insTable)
+                        y=$(sed -n 2p $insTable)
 
-                    
-                    IFS=','
-                    read -ra types <<<"$x"
-                    read -ra headlines <<<"$y"
-                    
-                    arr=()
-
-                    for (( i=0; i<${#headlines[@]}; i++ ))
-                    do
-                        read -p"Enter the value of ${headlines[i]} type ${types[$i]} " data
-                        y=$(check_type $data)
-                        if [ "$y" == ${types[$i]} ];then
-                            if [ i==0 ];then
-                                exist=$(awk -F "," -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
-                                if [ $exist=="the value already exist " ];then
-                                echo $exist
-                                grep ^$data $insTable
-                                else
-                                arr[$i]=$data
-                                # read -p"Enter the value of ${headlines[i]} type ${types[$i]} " data
-                                fi
-                            else
-                                arr[$i]=$data
-                            fi
-                            # arr[$i]=$data
-                        else
-                            read -p "Please Re-Enter type maching the data value of ${headlines[i]} type ${types[$i]} " data
-                        fi       
+                        IFS=','
+                        read -ra types <<<"$x"
+                        read -ra headlines <<<"$y"
                         
+                        arr=()
 
-                    done
-                    echo "${arr[*]}" >> $insTable
-
-                    else echo "No exist table like that name that you enter $insTable "
+                        for (( i=0; i<${#headlines[@]}; i++ ))
+                        do
+                            echo "Enter the value of ${headlines[i]} type ${types[$i]} "
+                            read data
+                            y=$(check_type $data)
+                            if [ ! "$y" == ${types[$i]} ];then
+                                echo "Please Re-Enter type maching the data value of ${headlines[i]} type ${types[$i]} "
+                                read data
+                            else
+                                if [ i==0 ];then
+                                    exist=$(awk -F "," -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
+                                    if [ $exist=="the value already exist " ];then
+                                    echo $exist
+                                    grep ^$data $insTable
+                                    else
+                                    arr[$i]=$data
+                                    fi
+                                else
+                                    arr[$i]=$data
+                                fi
+                            fi       
+                        done
+                        echo "${arr[*]}" >> $insTable
                     fi
-
-
-
             ;;
-            Select_From_Table)
-                    select selectone in allTable choose_row choose_column exit;
+            "Select Row/Column from Table")
+                select selectone in "Show Whole Table" "Show a single row" "Show a single column" Exit;
                     do
-
                         case $selectone in
-                        allTable)
-                            echo "all table that you have"
+                        "Show Whole Table")
+                            echo "List of Tables:"
                             find  $pwd -type f;
-                        read -p "Choose The Table that you need to show " insTable
-                            if [ -f $insTable ];then
-                            cat $insTable
-                            else echo "No exist table like that name that you enter $insTable "
-                            fi
-
-
+                            while [ true ]
+                            do
+                                echo "Which table would you like to view?"
+                                read insTable
+                                if [ -f $insTable ];then
+                                cat $insTable;
+                                break;
+                                else 
+                                echo "Table $insTable does not exist. Please choose a different table.";
+                                continue;
+                                fi
+                            done
                         ;;
-                        choose_row)
+                        "Show a single row")
                             echo "List of tables:"
                             find  $pwd -type f;
                             echo "Which table would you like to choose rows from?" 
                             read insTable
-                                if [ -f $insTable ];then
+                            if [ ! -f $insTable ];then
+                                echo "Table $insTable does not exist"
+                            else
                                 sed -n 1,2p $insTable
+                                echo "How many rows would you like to see?" 
+                                read rowshow
+                                arr=()
 
-                                    echo "How many rows would you like to see?" 
-                                    read rowshow
-                                    arr=()
-
-
-                                    ##This doesn't work.
-
-                                    for (( i=1; i<=$rowshow; i++ ))
-                                    do
+                                for (( i=1; i<=$rowshow; i++ ))
+                                do
                                     echo "Please enter the row number of row $i that you want to see:"
                                     read rowName
-
-                                    ##Since the first 3 rows of your database are reserved rows, you have to add 3 to the row number
-                                    ## -Zohry
-                                    ##Delete this comment after reading.
-
                                     rowName=$(($rowName + 3))
-                                    echo $rowName
-
-                                    ##Appending to an array is not done with arr[i]=X. Is it with arr+=X
-                                    ## -Zohry
-
                                     arr+=($rowName)
-                                    done
+                                done
 
-                                    echo "This should be here"
-                                    echo $arr
-                                    # awk ' NR$rowName' $insTable
-
-                                    ##Testing a new Forloop
-                                    ## -Zohry
-
-                                    for i in ${arr[@]}
-                                    do
-                                    echo "Row $i:"
+                                for i in ${arr[@]}
+                                do
+                                    echo "Row $(($i-3)):"
                                     sed -n "$i p" $insTable
-                                    done
-
-                                else echo "Table $insTable does not exist."
-                                fi
-                            
-
-
+                                done
+                            fi
                         ;;
-                        choose_column)
-                            echo "all table that you have"
-                                find  $pwd -type f;
-
-                            read -p "Choose The Table that you need to show column " insTable
-                                if [ -f $insTable ];then
+                        "Show a single column")
+                            echo "List of Tables:"
+                            find  $pwd -type f;
+                            echo "Which table would you like to see the columns of?" 
+                            read insTable
+                            if [ ! -f $insTable ];then
+                                echo "Table $insTable does not exist";
+                            else
                                 sed -n 2p $insTable
-                                read -p "name of colname " colnam
-                                        col_Num=$( awk -F "," -v var="$colnam"  ' NR==2 { 
-                                            for ( i=1; i<=NF; i++ )
-                                            {
-                                                if($i == var)
-                                                {
-                                                print (i);
-                                                break;
-                                                }
-                                            }
-                                        }' $insTable)
-                                        echo $col_Num
-                                         awk -F "," -v col="$col_Num"'{
-                                            print ($col)
-                                        }' $insTable
 
-                            
-                                else echo "No exist table like that name that you enter $insTable "
-                                fi
+                                echo "Which column would you like to view all data of?"
+                                read columnNumber
+                                cat $insTable | while read line
+                                do
+                                    awk -F ' ' 'NR>3 {print $2}'
+                                done
+                            echo "Returned to previous menu."
 
-                        
+                                # echo "Which column number would you like to see?"
+                                # read colnam
+
+                                # col_Num=$( awk -F "," -v var="$colnam"  ' NR==2 { 
+                                #             for ( i=1; i<=NF; i++ )
+                                #             {
+                                #                 if($i == var)
+                                #                 {
+                                #                 print (i);
+                                #                 break;
+                                #                 }
+                                #             }
+                                #         }' $insTable)
+                                # echo $col_Num
+                                # awk -F "," -v col="$col_Num"'{print ($col)}' $insTable
+                            fi
+                        ;;
+                        "Exit") 
+                            echo "Returned to previous menu."
+                            break;
                         esac
-
                     done
-
-
-                    done
+                
             ;;
             Delete_From_Table)
                 select selectone in Delete_row Delete_column exit;
@@ -301,10 +302,9 @@ do
                 Delete_row)
                 read -p""
 
-
                 ;;
                 Delete_column)
-                echo "all table that you have"
+                echo "List of Tables:"
                 find  $pwd -type f;
 
                     read -p "Choose The Table that you need to Delete column from " DelTable
@@ -345,30 +345,10 @@ do
             ;;
     esac
 
-
-
-
-
-
-
     done
 
-else echo "Data Base does not exist";
-    
+  
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     ;;
     Exit)
