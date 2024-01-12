@@ -154,7 +154,7 @@ if [ -d $NDB ];then
 
                 #Here:
                     echo "What would you like to select from a table?"
-                    select selectone in "Whole Table" "Specific Row" "Specific Column" exit;
+                    select selectone in "Whole Table" "Specific Row" "Specific Column" "exit";
                     do
                         case $selectone in
                         "Whole Table")
@@ -180,9 +180,6 @@ if [ -d $NDB ];then
                                     read rowshow
                                     arr=()
 
-
-                                    ##This doesn't work.
-
                                     for (( i=1; i<=$rowshow; i++ ))
                                     do
                                     echo "Please enter the row number of row $i that you want to see:"
@@ -191,18 +188,13 @@ if [ -d $NDB ];then
                                     ##Since the first 3 rows of your database are reserved rows, you have to add 3 to the row number
                                     ## -Zohry
                                     ##Delete this comment after reading.
-
                                     rowName=$(($rowName + 3))
-                                    echo $rowName
 
                                     ##Appending to an array is not done with arr[i]=X. Is it with arr+=X
                                     ## -Zohry
-
                                     arr+=($rowName)
-                                    done
 
-                                    echo "This should be here"
-                                    echo $arr
+                                    done
                                     # awk ' NR$rowName' $insTable
 
                                     ##Testing a new Forloop
@@ -210,25 +202,24 @@ if [ -d $NDB ];then
 
                                     for i in ${arr[@]}
                                     do
-                                    echo "Row $i:"
+                                    echo "Row $(($i-3)):"
                                     sed -n "$i p" $insTable
                                     done
 
                                 else echo "Table $insTable does not exist."
                                 fi
-                            
                         ;;
                         "Specific Column")
-                            echo "all table that you have"
+                            echo "List of Tables:"
                                 find  $pwd -type f;
 
-                            read -p "Choose The Table that you need to show " insTable
+                            echo "Which table would you like to check?"
+                            read insTable
                                 if [ -f $insTable ];then
                                     
                                 sed -n 1,2p $insTable
                                 y=$(sed -n 2p $insTable)
-
-
+                                
                                 arrValue=();
                             read -p "give us the counts of column that you need to show " colshow
 
@@ -288,16 +279,13 @@ if [ -d $NDB ];then
 
                     done
 
-
-
-
-
-
-
-
             ;;
-            *)
+            "exit")
                 break
+            ;;
+
+            *)
+                echo "Invalid input. Please try again."
             ;;
     esac
 
