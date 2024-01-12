@@ -55,7 +55,7 @@ do
         
     echo "Please choose what you want to do in this database."
 
-    select chooseT in "Create a Table"  "List contents of a table" "Drop a Table" "Insert values into Table" "Select Row/Column from Table" Delete_From_Table Update_From_table Exit;
+    select chooseT in "Create a Table"  "List contents of a table" "Drop a Table" "Insert values into Table" "Select Row/Column from Table" "Delete Data from Table" "Update Table" Exit;
     do
         case $chooseT in
             "Create a Table")
@@ -106,7 +106,7 @@ do
                 done
                 echo "${arrType[*]}">>$Tname
                 echo "${arr[*]}">>$Tname
-                echo >>$Tname
+                echo "------------------------------------" >>$Tname
                 fi    
             ;;
 
@@ -217,11 +217,9 @@ do
                                 echo "Which table would you like to view?"
                                 read insTable
                                 if [ -f $insTable ];then
-                                cat $insTable;
-                                break;
+                                    cat $insTable; break;
                                 else 
-                                echo "Table $insTable does not exist. Please choose a different table.";
-                                continue;
+                                    echo "Table $insTable does not exist. Please choose a different table."; continue;
                                 fi
                             done
                         ;;
@@ -299,52 +297,80 @@ do
                                 done
                             fi
                         ;;
-                        "Exit") 
+                        "Exit")
                             echo "Returned to previous menu."
                             break;
                         esac
                     done
-                
-            ;;
-            Delete_From_Table)
-                select selectone in Delete_row Delete_column exit;
+                ;;
+            "Delete Data from Table")
+                select selectone in "Delete Row" exit;
                 do
                 case $selectone in 
-                Delete_row)
-                read -p""
-
+                "Delete Row")
+                    echo "List of Tables:"
+                    find  $pwd -type f;
+                    echo "Which table would you like to see the columns of?" 
+                    read insTable
+                    cat $insTable
+                    echo "Which row would you like to delete? (The first entry after the column names is row #1)"
+                    read rowNumber
+                    rowNumber=$(($rowNumber + 3))
+                    sed -i "${rowNumber}d" $insTable
+                    echo "Row deleted!"
                 ;;
-                Delete_column)
+                # "Delete Column")
+                #     echo "List of Tables:"
+                #     find  $pwd -type f;
+                #     read -p "Which table would you like to delete from?" DelTable
+                #     if [ -f $DelTable ];then
+                #         sed -n 2p $DelTable
+                #         read -p "name of colname that you need to delete " colnam
+                #             col_Num=$( awk -F "," -v var="$DelTable"  ' NR==2 { 
+                #                 for ( i=1; i<=NF; i++ )
+                #                             {if($i == var)
+                #                                 {
+                #                                 print (i);
+                #                                 break;
+                #                                 }
+                #                                 }
+                #                             }' $DelTable)
+                #                 echo $col_Num
+                #                     $( awk -F "," -v col="$col_Num"'{
+                #                         print $col"
+                #                         }' $DelTable)
+                #     else print "Table does not exist."
+                #     fi
+                # ;;
+                esac
+            done
+            ;;
+
+            "Update Table")
                 echo "List of Tables:"
                 find  $pwd -type f;
-
-                    read -p "Choose The Table that you need to Delete column from " DelTable
-                    if [ -f $DelTable ];then
-                    sed -n 2p $DelTable
-                        read -p "name of colname that you need to delete " colnam
-                            col_Num=$( awk -F "," -v var="$DelTable"  ' NR==2 { 
-                                for ( i=1; i<=NF; i++ )
-                                        {
-                                            if($i == var)
-                                            {
-                                            print (i);
-                                            break;
-                                            }
-                                            }
-                                        }' $DelTable)
-                            echo $col_Num
-                                $( awk -F "," -v col="$col_Num"'{
-                                    print $col"
-                                    }' $DelTable)
-
-
-
-                    else print "No exist Table like what you want"
+                echo "Which table would you like to see the columns of?" 
+                read insTable
+                cat $insTable
+                echo "Which row would you like to update? (The first entry after the column names is row #1)"
+                read rowNumber
+                echo "Which column would you like to update? (The leftmost entry is column 1)"
+                read columnNumber
+                echo "Row $rowNumber, column $columnNumber's value is"
+                rowNumber=$((rowNumber+3))
+                awk -v r=$columnNumber -F\  NR==${rowNumber}'{print $r}' $insTable
+                while [ true ]
+                do
+                    echo "What would you like to change it to?"
+                    read newValue
+                    if [[ $newValue =~ [^a-zA-Z0-9_] ]]; then echo "Fields can only contain alphanumeric characters and the underscore(_)." ; continue;
+                    else break;
                     fi
-
-                esac
                 done
+
+                awk -v r=$columnNumber 'BEGIN{FS=OFS=" "}NR==n{$r=a}1' n="$rowNumber" a="$newValue" $insTable > content && mv content $insTable
             ;;
+
             *)
                 break
             ;;
