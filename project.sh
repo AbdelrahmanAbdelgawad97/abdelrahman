@@ -206,7 +206,7 @@ do
                     fi
             ;;
             "Select Row/Column from Table")
-                select selectone in "Show Whole Table" "Show a single row" "Show a single column" Exit;
+                select selectone in "Show Whole Table" "Show Multiple Rows" "Show a single column" Exit;
                     do
                         case $selectone in
                         "Show Whole Table")
@@ -225,7 +225,7 @@ do
                                 fi
                             done
                         ;;
-                        "Show a single row")
+                        "Show Multiple Rows")
                             echo "List of tables:"
                             find  $pwd -type f;
                             echo "Which table would you like to choose rows from?" 
@@ -263,29 +263,40 @@ do
                             else
                                 sed -n 2p $insTable
 
-                                echo "Which column would you like to view all data of?"
-                                read columnNumber
-                                cat $insTable | while read line
+                                select choice in "By Column Number" "By Column Name"
                                 do
-                                    awk -F ' ' 'NR>3 {print $2}'
+                                case $choice in
+                                    "By Column Number")
+                                    echo "Which column would you like to view all data of?"
+                                    read columnNumber
+                                    cat $insTable | while read line
+                                    do
+                                        awk myvar='$columnNumber' -F ' ' 'NR>3 {print myvar}'
+                                    done
+                                    ;;
+
+                                    "By Column Name")
+                                    echo "Which column name would you like to view all the data of?"
+                                    read columnName
+
+                                    col_Num=$( awk -F "," -v var="$columnName"  ' NR==2 { 
+                                                for ( i=1; i<=NF; i++ )
+                                                {
+                                                    if($i == var)
+                                                    {
+                                                    print (i);
+                                                    break;
+                                                    }
+                                                }
+                                            }' $insTable)
+                                    echo $col_Num
+                                    cat $insTable | while read line
+                                    do
+                                        awk myvar='$col_Num' -F ' ' 'NR>3 {print myvar}'
+                                    done
+                                    ;;
+                                esac
                                 done
-                            echo "Returned to previous menu."
-
-                                # echo "Which column number would you like to see?"
-                                # read colnam
-
-                                # col_Num=$( awk -F "," -v var="$colnam"  ' NR==2 { 
-                                #             for ( i=1; i<=NF; i++ )
-                                #             {
-                                #                 if($i == var)
-                                #                 {
-                                #                 print (i);
-                                #                 break;
-                                #                 }
-                                #             }
-                                #         }' $insTable)
-                                # echo $col_Num
-                                # awk -F "," -v col="$col_Num"'{print ($col)}' $insTable
                             fi
                         ;;
                         "Exit") 
