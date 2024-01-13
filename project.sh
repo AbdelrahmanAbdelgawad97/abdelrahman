@@ -99,13 +99,13 @@ do
                 for (( i=1; i<=$Tcolumn;i++ ))
                 do
                     if [ $i -eq 1 ];then
-                        echo "Enter the name of column number $i. It will be the primary key."; read ColName
-                        arr[$i]="*$ColName"
+                        echo "Enter the name of column number $i. It will be the primary key."; read columnNamee
+                        arr[$i]="*$columnNamee"
                         echo "Choose the desired type of column number $i. (int,string,float,date)"; read Coltype
                         arrType[$i]="$Coltype"
                     else
-                        echo "Enter the name of column number $i."; read ColName;
-                        arr[$i]=$ColName
+                        echo "Enter the name of column number $i."; read columnNamee;
+                        arr[$i]=$columnNamee
                         echo "Choose the type of column number $i. (int,string,float,date)"; read Coltype;
                         arrType[$i]=$Coltype
                     fi
@@ -278,24 +278,17 @@ do
                                     ;;
 
                                     "By Column Name")
-                                    echo "Which column name would you like to view all the data of?"
-                                    read columnName
-
-                                    col_Num=$( awk -F "," -v var="$columnName"  ' NR==2 { 
-                                                for ( i=1; i<=NF; i++ )
-                                                {
-                                                    if($i == var)
-                                                    {
-                                                    print (i);
-                                                    break;
-                                                    }
+                                        sed -n 2p $insTable
+                                        echo "Please enter the name of the column you would like to see:"
+                                        read columnName
+                                        col_Num=$( awk -F "," -v var="$columnName"  ' NR==2 { 
+                                            for ( i=1; i<=NF; i++ )
+                                                {if($i == var)
+                                                    {print (i); break;}
                                                 }
-                                            }' $insTable)
-                                    echo $col_Num
-                                    cat $insTable | while read line
-                                    do
-                                        awk myvar='$col_Num' -F ' ' 'NR>3 {print myvar}'
-                                    done
+                                        }' $insTable)
+                                        echo $col_Num
+                                        awk -F " " -v col="$col_Num" '{print $col}' $insTable
                                     ;;
                                 esac
                                 done
@@ -323,29 +316,6 @@ do
                     sed -i "${rowNumber}d" $insTable
                     echo "Row deleted!"
                 ;;
-                # "Delete Column")
-                #     echo "List of Tables:"
-                #     find  $pwd -type f;
-                #     read -p "Which table would you like to delete from?" DelTable
-                #     if [ -f $DelTable ];then
-                #         sed -n 2p $DelTable
-                #         read -p "name of colname that you need to delete " colnam
-                #             col_Num=$( awk -F "," -v var="$DelTable"  ' NR==2 { 
-                #                 for ( i=1; i<=NF; i++ )
-                #                             {if($i == var)
-                #                                 {
-                #                                 print (i);
-                #                                 break;
-                #                                 }
-                #                                 }
-                #                             }' $DelTable)
-                #                 echo $col_Num
-                #                     $( awk -F "," -v col="$col_Num"'{
-                #                         print $col"
-                #                         }' $DelTable)
-                #     else print "Table does not exist."
-                #     fi
-                # ;;
                 esac
             done
             ;;
