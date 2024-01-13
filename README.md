@@ -4,4 +4,4 @@ Instructions:
 
 Run the Project.sh with "source Project.sh"
 
-Mido, Abdo, and g.sh are test databases and can be freely removed.
+Mido and g.sh are test files and can be freely removed.
