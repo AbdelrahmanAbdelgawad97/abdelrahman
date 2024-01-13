@@ -14,16 +14,11 @@ do
         ls -d */ 2>/dev/null || echo "No databases found."
         while [ true ]
         do
-            echo "What would you like to name the database?"
-            read CDB
-            if [ -d $CDB ]; then 
-                echo "Database already exists. Please enter a different name."; continue;
-            elif [[ $CDB =~ $notAlphanumerics ]]; then 
-                echo 'Database name cannot have non-alphanumeric characters, except underscores and spaces(which are converted to underscores).'; continue;
-            elif [[ $CDB =~ ^[0-9] ]]; then 
-                echo "Database names cannot start with a number. Please enter a different name."; continue;
-            elif ! [[ $CDB =~ [a-zA-Z0-9]+ ]]; then
-                echo "Database names cannot contain only special characters. Please enter a different name."; continue;
+            echo "What would you like to name the database?"; read CDB;
+            if [ -d $CDB ]; then echo "Database already exists. Please enter a different name."; continue;
+            elif [[ $CDB =~ $notAlphanumerics ]]; then echo 'Database name cannot have non-alphanumeric characters, except underscores and spaces(which are converted to underscores).'; continue;
+            elif [[ $CDB =~ ^[0-9] ]]; then echo "Database names cannot start with a number. Please enter a different name."; continue;
+            elif ! [[ $CDB =~ [a-zA-Z0-9]+ ]]; then echo "Database names cannot contain only special characters. Please enter a different name."; continue;
             else
                 var=$CDB;
                 var=${var//" "/"_"};
@@ -34,19 +29,19 @@ do
         done      
     ;;
     "List All Databases")
-        echo "List of databases:"
-        ls -d */ 2>/dev/null || echo "No databases found."
+        echo "List of databases:";
+        ls -d */ 2>/dev/null || echo "No databases found.";
     ;;
     "Delete A Database")
-        echo "List of Databases:" 
+        echo "List of Databases:";
         ls -d */;
         while [ true ]
         do
-            echo "Which database would you like to delete? Press 0 to return to previous menu."
-            read DDB
+            echo "Which database would you like to delete? Press 0 to return to previous menu.";
+            read DDB;
             if 
                 [ $DDB -eq 0 ] 2>/dev/null; then echo "Returning to previous menu."; break;
-                elif [ -d $DDB ];then rm -r $DDB; echo "Database deleted! Returned to previous menu"; break;
+                elif [ -d $DDB ]; then rm -r $DDB; echo "Database deleted! Returned to previous menu"; break;
                 else echo "Database $DDB does not exist. Please try again."; continue;
             fi
         done
@@ -54,12 +49,11 @@ do
     "Access a Database")
         echo "List of Databases:" 
         ls -d */;
-        echo "Which database would you like to connect to?"
-        read NDB
-        if [ ! -d $NDB ];then
-            echo "Database $NDB does not exist"; break
+        echo "Which database would you like to connect to?";
+        read NDB;
+        if [ ! -d $NDB ]; then echo "Database $NDB does not exist. Returning to previous menu."; continue;
         fi
-            cd $NDB;
+        cd $NDB;
         
     echo "Please choose what you want to do in this database."
 
@@ -71,14 +65,16 @@ do
                 find  $pwd -type f;
                 while [ true ]
                 do
-                    echo "Enter the name of the new table:"; 
+                    echo "Enter the name of the new table. Type 0 to return to previous menu."; 
                     read Tname;
                     if [[ $Tname =~ $notAlphanumerics ]]; then 
                         echo 'Table names can only contain alphanumeric characters, underscores, and spaces(which are converted to spaces).'; continue;
                     elif [[ $Tname =~ ^[0-9] ]]; then 
-                        echo "Table names cannot start with a number."; continue;
+                        echo "Table names cannot start with a number. Please Enter a different name."; continue;
                     elif ! [[ $Tname =~ [a-zA-Z0-9]+ ]]; then
                         echo "Table names cannot contain only special characters. Please enter a different name."; continue;
+                    elif [ -f $Tname ]; then
+                        echo "Table already exists. Please enter a different name."; break
                     else
                         var=$Tname
                         IFS=","
@@ -86,30 +82,33 @@ do
                         break
                     fi
                 done
-
-                if [ -f $Tname ];then
-                    echo "Table already exists."; break
-                fi
                 touch $Tname
 
                 arr=()
                 arrType=()
 
-                echo "How many columns should it have?"
-                read Tcolumn
+                while [ true ]
+                do
+                    echo "How many columns should it have?"
+                    read Tcolumn
+                    if 
+                        [[ $Tcolumn =~ [^0-9]+ ]]; then echo "Input must be a number"; continue;
+                        else break;
+                    fi
+                done
                 for (( i=1; i<=$Tcolumn;i++ ))
                 do
                     if [ $i -eq 1 ];then
-                        read -p"Enter the name of column number $i and it will be Primary Key " ColName
-                        read -p"choose the type of column number $i (int,string,float,date) " Coltype
+                        echo "Enter the name of column number $i. It will be the primary key."; read ColName
                         arr[$i]="*$ColName"
+                        echo "Choose the desired type of column number $i. (int,string,float,date)"; read Coltype
                         arrType[$i]="$Coltype"
                     else
-                        read -p"Enter the name of column number $i " ColName
-                        read -p"choose the type of column number $i (int,string,float,date) " Coltype
+                        echo "Enter the name of column number $i."; read ColName;
                         arr[$i]=$ColName
+                        echo "Choose the type of column number $i. (int,string,float,date)"; read Coltype;
                         arrType[$i]=$Coltype
-                    fi    
+                    fi
                 done
                 echo "${arrType[*]}">>$Tname
                 echo "${arr[*]}">>$Tname
@@ -129,8 +128,7 @@ do
                         cat $insTable
                         break;
                     else 
-                        echo "Table $insTable does not exist."
-                        continue;
+                        echo "Table $insTable does not exist. Returning to previous menu."; break;
                     fi
                 done
             
