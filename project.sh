@@ -195,10 +195,10 @@ do
                                 read data
                             else
                                 if [ $i -eq 0 ];then
-                                    exist=$(awk -F "," -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
+                                    exist=$(awk -F " " -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
                                     if [ $exist == "the value already exist " ];then
                                     echo $exist
-                                    echo "Please Re-Enter type maching the data value of ${headlines[i]} type ${types[$i]} "
+                                    echo "Please Re-Enter type matching the data value of ${headlines[i]} type ${types[$i]} "
                                     read data
                                     else
                                     arr[$i]=$data
@@ -276,7 +276,7 @@ do
                                             read columnNumber
                                             cat $insTable | while read line
                                             do
-                                                awk myvar='$columnNumber' -F ' ' 'NR>3 {print myvar}'
+                                                awk myvar='$columnNumber' -F\s 'NR>3 {print $myvar}' $insTable
                                             done
                                             ;;
 
