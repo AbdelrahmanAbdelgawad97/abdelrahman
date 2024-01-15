@@ -195,7 +195,7 @@ do
                                 read data
                             else
                                 if [ $i -eq 0 ];then
-                                    exist=$(awk -F " " -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
+                                    exist=$(awk -F "," -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
                                     if [ $exist == "the value already exist " ];then
                                     echo $exist
                                     echo "Please Re-Enter type matching the data value of ${headlines[i]} type ${types[$i]} "
@@ -261,40 +261,26 @@ do
                                 "Show a single column")
                                     echo "List of Tables:"
                                     find  $pwd -type f;
-                                    echo "Which table would you like to see the columns of?" 
-                                    read insTable
-                                    if [ ! -f $insTable ];then
-                                        echo "Table $insTable does not exist";
-                                    else
-                                        sed -n 2p $insTable
-
-                                        select choice in "By Column Number" "By Column Name"
-                                        do
-                                        case $choice in
-                                            "By Column Number")
-                                            echo "Which column would you like to view all data of?"
-                                            read columnNumber
-                                            cat $insTable | while read line
-                                            do
-                                                awk myvar='$columnNumber' -F\s 'NR>3 {print $myvar}' $insTable
-                                            done
-                                            ;;
-
-                                            "By Column Name")
-                                                sed -n 2p $insTable
-                                                echo "Please enter the name of the column you would like to see:"
-                                                read columnName
-                                                col_Num=$( awk -F "," -v var="$columnName"  ' NR==2 { 
-                                                    for ( i=1; i<=NF; i++ )
-                                                        {if($i == var)
-                                                            {print (i); break;}
-                                                        }
-                                                }' $insTable)
+                                    echo "Which table would you like to show column from?" 
+                                    read tablename
+                                    if [ -f $tablename ];then
+                                        sed -n 2p $tablename
+                                        echo "Enter the name of the column you would like to see. Note that the asterisk(*) symbol is also part of the name." 
+                                        read colnam
+                                            col_Num=$( awk -F "," -v var="$colnam"  ' NR==2 { 
+                                                for ( i=1; i<=NF; i++ )
+                                                            {if($i == var)
+                                                                {
+                                                                print (i);
+                                                                break;
+                                                                }
+                                                                }
+                                                            }' $tablename)
                                                 echo $col_Num
-                                                awk -F " " -v col="$col_Num" '{print $col}' $insTable
-                                            ;;
-                                        esac
-                                        done
+                                                     awk -F "," -v col="$col_Num" '{
+                                                        print $col
+                                                        }' $tablename
+                                    else print "Table does not exist."
                                     fi
                                 ;;
                                 "Exit")
