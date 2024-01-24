@@ -1,5 +1,6 @@
 #!bin/bash
 LC_COLLATE=C
+##Shell option
 shopt -s extglob
  
 notAlphanumerics='[^a-zA-Z0-9_ ]'
@@ -10,7 +11,7 @@ select choose in "Create a Database" "List All Databases" "Delete A Database" "A
 do
     case $choose in
     "Create a Database")
-        echo "List of databases(currently):"
+        echo "List of databases (currently):"
         ls -d */ 2>/dev/null || echo "No databases found."
         while [ true ]
         do
@@ -30,8 +31,7 @@ do
         done      
     ;;
     "List All Databases")
-        echo "List of databases:";
-        ls -d */ 2>/dev/null || echo "No databases found."; echo "Returning to previous menu.";
+        echo "List of databases:"; ls -d */ 2>/dev/null || echo "No databases found."; echo "Returning to previous menu.";
     ;;
     "Delete A Database")
         echo "List of Databases:";
@@ -74,7 +74,7 @@ do
                         elif ! [[ $Tname =~ [a-zA-Z0-9]+ ]]; then
                             echo "Table names cannot contain only special characters. Please enter a different name."; continue;
                         elif [ -f $Tname ]; then
-                            echo "Table already exists. Please enter a different name."; break
+                            echo "Table already exists. Please enter a different name."; continue;
                         else
                             var=$Tname
                             IFS=","
@@ -82,7 +82,6 @@ do
                             break
                         fi
                     done
-                    touch $Tname
 
                     arr=()
                     arrType=()
@@ -92,7 +91,8 @@ do
                         echo "How many columns should it have?"
                         read Tcolumn
                         if 
-                            [[ $Tcolumn =~ [^0-9]+ ]]; then echo "Input must be a number"; continue;
+                            [[ $Tcolumn =~ [^0-9]+ ]]; then echo "Input must be a number higher than 0."; continue;
+                            elif [[ $Tcolumn -eq 0 ]]; then echo "Table must have at least one column."; continue;
                             else break;
                         fi
                     done
@@ -100,19 +100,27 @@ do
                     do
                         if [ $i -eq 1 ];then
                             echo "Enter the name of column number $i. It will be the primary key."; read columnNamee
-                            arr[$i]="*$columnNamee"
-                            echo "Choose the desired type of column number $i. (int,string,float,date)"; read Coltype
-                            arrType[$i]="$Coltype"
+                            arr[$i]="$columnNamee"
+                            while [ true ]
+                            do
+                                echo "Choose the desired type of column number $i. (int,string,float,date)"; read Coltype
+                                if ! [[ "$Coltype" =~ (^int|string|float|date)$ ]]; then echo "Invalid input. Please enter one of the selected types."; continue;
+                                else arrType[$i]="$Coltype"; break;
+                                fi
+                            done
                         else
                             echo "Enter the name of column number $i."; read columnNamee;
                             arr[$i]=$columnNamee
                             echo "Choose the type of column number $i. (int,string,float,date)"; read Coltype;
                             arrType[$i]=$Coltype
                         fi
+                        
                     done
+                    touch $Tname
                     echo "${arrType[*]}">>$Tname
                     echo "${arr[*]}">>$Tname
-                    echo "------------------------------------" >>$Tname
+                    echo "Primary Key: ${arr[1]}" >>$Tname
+                    echo "Table $Tname created!"
                 ;;
                 "List contents of a table")
                     echo "List of tables:"
@@ -151,7 +159,7 @@ do
                     done
                 ;;
                 "Insert values into Table")
-                 function check_type()
+                    function check_type()
                         {
                         if [[ $1 =~ ^[+-]?[0-9]+$ ]]; then
                             x="int"
@@ -167,96 +175,90 @@ do
                             echo $x
                         fi
                         }
+                    echo "List of Tables:"
+                    find  $pwd -type f;
+                    while [ true ]
+                    do
+                        echo "Which table would you like to insert the data into?"
+                        read insTable
+                        if [ ! -f $insTable ]; then echo "Table $insTable does not exist." ; continue;
+                        else
+                            x=$(sed -n 1p $insTable)
+                            y=$(sed -n 2p $insTable)
 
-                echo "List of Tables:"
-                find  $pwd -type f;
-                echo "Which table would you like to insert the data into?"
-                read insTable
-                    if [ ! -f $insTable ];then
-                        echo "Table $insTable does not exist."
-                    else
-                        x=$(sed -n 1p $insTable)
-                        y=$(sed -n 2p $insTable)
-
-                        IFS=','
-                        read -ra types <<<"$x"
-                        read -ra headlines <<<"$y"
-                        
-                        arr=()
-
-                        for (( i=0; i<${#headlines[@]}; i++ ))
-                        do
-                            echo "Enter the value of ${headlines[i]} type ${types[$i]} "
-                            read data
-                            y=$(check_type $data)
+                            IFS=','
+                            read -ra types <<<"$x"
+                            read -ra headlines <<<"$y"
                             
-                            if [ ! "$y" == ${types[$i]} ];then
-                                echo "Please Re-Enter type maching the data value of ${headlines[i]} type ${types[$i]} "
-                                read data
-                            else
-                                if [ $i -eq 0 ];then
-                                    exist=$(awk -F "," -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
-                                    if [ $exist == "the value already exist " ];then
-                                    echo $exist
-                                    echo "Please Re-Enter type matching the data value of ${headlines[i]} type ${types[$i]} "
+                            arr=()
+
+                            for (( i=0; i<${#headlines[@]}; i++ ))
+                            do
+                                while [ true ]
+                                do
+                                    echo "Enter the value of ${headlines[i]}, of datatype ${types[$i]}."
                                     read data
-                                    else
-                                    arr[$i]=$data
-                                    fi
-                                else
-                                    arr[$i]=$data
-                                fi
-                            fi       
-                        done
-                        echo "${arr[*]}" >> $insTable
-                        
-                    fi
+                                    y=$(check_type $data)
+                                    exist=$(awk -F "," -v var="$data" ' $1==var { print "the value already exist " } ' $insTable)
+                                    if [ ! "$y" == ${types[$i]} ]; then echo "This input does not match the data type of this column. Please enter a different value." ; continue;
+                                    elif [ $i -eq 0 -a $exist == "the value already exist "  ]; then echo "This value already exists. Please enter a different value".; continue;
+                                    else arr[$i]=$data; break;
+                                    fi       
+                                done
+                            done
+                            echo "${arr[*]}" >> $insTable
+                            echo "Row added!";
+                            break;
+                        fi
+                    done
                 ;;
                 "Select Row/Column from Table")
-                    select selectone in "Show Whole Table" "Show Multiple Rows" "Show a single column" Exit;
+                    select selectone in "Show Multiple Rows" "Show a single column" Exit;
                         do
                             case $selectone in
-                                "Show Whole Table")
-                                    echo "List of Tables:"
-                                    find  $pwd -type f;
-                                    while [ true ]
-                                    do
-                                        echo "Which table would you like to view?"
-                                        read insTable
-                                        if [ -f $insTable ];then
-                                            cat $insTable; break;
-                                        else 
-                                            echo "Table $insTable does not exist. Please choose a different table."; continue;
-                                        fi
-                                    done
-                                ;;
                                 "Show Multiple Rows")
                                     echo "List of tables:"
                                     find  $pwd -type f;
-                                    echo "Which table would you like to choose rows from?" 
-                                    read insTable
-                                    if [ ! -f $insTable ];then
-                                        echo "Table $insTable does not exist"
-                                    else
-                                        sed -n 1,2p $insTable
-                                        echo "How many rows would you like to see?" 
-                                        read rowshow
-                                        arr=()
+                                    while [ true ]
+                                    do 
+                                        echo "Which table would you like to choose rows from?" 
+                                        read insTable
+                                        if [ ! -f $insTable ]; then echo "Table $insTable does not exist" ; continue;
+                                        else
+                                            sed -n 1,2p $insTable
+                                            while [ true ]
+                                            do
+                                                echo "How many rows would you like to see?" 
+                                                read rowshow
+                                                if [[ $rowshow =~ [^0-9]+ || $rowshow -eq 0  ]]; then echo "Input must be a number higher than 0."; continue;
+                                                else break;
+                                                fi
+                                            done
+                                            arr=()
 
-                                        for (( i=1; i<=$rowshow; i++ ))
-                                        do
-                                            echo "Please enter the row number of row $i that you want to see:"
-                                            read rowName
-                                            rowName=$(($rowName + 3))
-                                            arr+=($rowName)
-                                        done
+                                            for (( i=1; i<=$rowshow; i++ ))
+                                            do
+                                                while [ true ]
+                                                do
+                                                    echo "Please enter the row number of row $i that you want to see:"
+                                                    read rowName
+                                                    if [[ $rowName =~ [^0-9]+ || $rowshow -eq 0  ]]; then echo "Input must be a number higher than 0."; continue;
+                                                    else break;
+                                                    fi
+                                                done
+                                                rowName=$(($rowName + 3))
+                                                arr+=($rowName)
+                                            done
 
-                                        for i in ${arr[@]}
-                                        do
-                                            echo "Row $(($i-3)):"
-                                            sed -n "$i p" $insTable
-                                        done
-                                    fi
+                                            for i in ${arr[@]}
+                                            do
+                                                echo "Row $(($i-3)):"
+                                                sed -n "$i p" $insTable
+                                            done
+                                        echo "Returned to previous menu";
+                                        break;
+                                        fi
+                                    done
                                 ;;
                                 "Show a single column")
                                     echo "List of Tables:"
@@ -297,8 +299,13 @@ do
                         "Delete Row")
                             echo "List of Tables:"
                             find  $pwd -type f;
-                            echo "Which table would you like to see the columns of?" 
-                            read insTable
+                            while [ true ]
+                            do 
+                                echo "Which table would you like to see the columns of?" ; read insTable
+                                if [ -f $insTable ]; then continue;
+                                else echo "This table does not exist. Please enter a valid table name."
+                                fi
+                            done
                             cat $insTable
                             echo "Which row would you like to delete? (The first entry after the column names is row #1)"
                             read rowNumber
@@ -320,7 +327,7 @@ do
                     read columnNumber
                     echo "Row $rowNumber, column $columnNumber's value is"
                     rowNumber=$((rowNumber+3))
-                    awk -v r=$columnNumber -F\  NR==${rowNumber}'{print $r}' $insTable
+                    awk -v r=$columnNumber -F","  NR==${rowNumber}'{print $r}' $insTable
                     while [ true ]
                     do
                         echo "What would you like to change it to?"
@@ -330,7 +337,13 @@ do
                         fi
                     done
 
-                    awk -v r=$columnNumber 'BEGIN{FS=OFS=" "}NR==n{$r=a}1' n="$rowNumber" a="$newValue" $insTable > content && mv content $insTable
+                    ## n is row number
+                    ## r is the column number
+                    ## a is the new value
+                    ## FS is field separator(We use "," as our field separator)
+
+                    awk -v r=$columnNumber 'BEGIN{FS=OFS=","}NR==n{$r=a}1' n="$rowNumber" a="$newValue" $insTable > content && mv content $insTable
+                    echo "Value changed!"
                 ;;
                 *)
                     break
