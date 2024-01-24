@@ -63,7 +63,7 @@ do
                 "Create a Table")
                     echo "List of tables:";
                     find  $pwd -type f;
-                    while [ true ]
+                    while [ true ] #Check Table Name
                     do
                         echo "Enter the name of the new table. Type 0 to return to previous menu."; 
                         read Tname;
@@ -86,7 +86,7 @@ do
                     arr=()
                     arrType=()
 
-                    while [ true ]
+                    while [ true ] #Check Column Number
                     do
                         echo "How many columns should it have?"
                         read Tcolumn
@@ -96,7 +96,8 @@ do
                             else break;
                         fi
                     done
-                    for (( i=1; i<=$Tcolumn;i++ ))
+
+                    for (( i=1; i<=$Tcolumn;i++ )) #Ask for column names and types.
                     do
                         if [ $i -eq 1 ];then
                             echo "Enter the name of column number $i. It will be the primary key."; read columnNamee
@@ -114,8 +115,8 @@ do
                             echo "Choose the type of column number $i. (int,string,float,date)"; read Coltype;
                             arrType[$i]=$Coltype
                         fi
-                        
                     done
+
                     touch $Tname
                     echo "${arrType[*]}">>$Tname
                     echo "${arr[*]}">>$Tname
@@ -177,7 +178,7 @@ do
                         }
                     echo "List of Tables:"
                     find  $pwd -type f;
-                    while [ true ]
+                    while [ true ] #Check if table exists
                     do
                         echo "Which table would you like to insert the data into?"
                         read insTable
@@ -194,7 +195,7 @@ do
 
                             for (( i=0; i<${#headlines[@]}; i++ ))
                             do
-                                while [ true ]
+                                while [ true ] #Check if datatype is correct.
                                 do
                                     echo "Enter the value of ${headlines[i]}, of datatype ${types[$i]}."
                                     read data
@@ -206,6 +207,7 @@ do
                                     fi       
                                 done
                             done
+
                             echo "${arr[*]}" >> $insTable
                             echo "Row added!";
                             break;
@@ -293,7 +295,7 @@ do
                         done
                 ;;
                 "Delete Data from Table")
-                    select selectone in "Delete Row" exit;
+                    select selectone in "Delete Row" "Delete Value" exit;
                     do
                         case $selectone in 
                         "Delete Row")
@@ -302,8 +304,8 @@ do
                             while [ true ]
                             do 
                                 echo "Which table would you like to see the columns of?" ; read insTable
-                                if [ -f $insTable ]; then continue;
-                                else echo "This table does not exist. Please enter a valid table name."
+                                if ![ -f $insTable ]; then echo "This table does not exist. Please enter a valid table name."; continue;
+                                else break;
                                 fi
                             done
                             cat $insTable
@@ -313,6 +315,29 @@ do
                             sed -i "${rowNumber}d" $insTable
                             echo "Row deleted!"
                         ;;
+                        "Delete Value")
+                            echo "List of Tables:"
+                            find  $pwd -type f;
+                            echo "Which table would you like to see the columns of?"; read insTable
+                            cat $insTable
+                            echo "Which row would you like to update? (The first entry after the column names is row #1)"
+                            read rowNumber
+
+                            while [ true ] #Read Column Number
+                            do
+                                echo "Which column would you like to update? (The leftmost entry is column 1)"
+                                read columnNumber
+                                if [ $columnNumber -eq 1 ]; then echo "You cannot delete the primary key. Please try again."; continue
+                                else break;
+                                fi
+                            done
+
+                            echo "Row $rowNumber, column $columnNumber's value is"
+                            rowNumber=$((rowNumber+3))
+                            awk -v r=$columnNumber -F","  NR==${rowNumber}'{print $r}' $insTable
+                            
+                            awk -v r=$columnNumber 'BEGIN{FS=OFS=","}NR==n{$r=""}1' n="$rowNumber" $insTable > content && mv content $insTable
+                            echo "Value deleted!"
                         esac
                     done
                 ;;
@@ -336,11 +361,6 @@ do
                         else break;
                         fi
                     done
-
-                    ## n is row number
-                    ## r is the column number
-                    ## a is the new value
-                    ## FS is field separator(We use "," as our field separator)
 
                     awk -v r=$columnNumber 'BEGIN{FS=OFS=","}NR==n{$r=a}1' n="$rowNumber" a="$newValue" $insTable > content && mv content $insTable
                     echo "Value changed!"
